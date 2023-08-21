@@ -17,6 +17,7 @@
 		9385D42F2A9275EF0057AD8A /* RenderAPI_D3D11.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9385D42C2A9275EF0057AD8A /* RenderAPI_D3D11.cpp */; };
 		9385D4302A9275EF0057AD8A /* RenderAPI_Vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9385D42D2A9275EF0057AD8A /* RenderAPI_Vulkan.cpp */; };
 		9385D4312A9275EF0057AD8A /* RenderAPI_D3D12.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9385D42E2A9275EF0057AD8A /* RenderAPI_D3D12.cpp */; };
+		9385D4382A92B24A0057AD8A /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9385D4372A92B24A0057AD8A /* Logger.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -53,6 +54,9 @@
 		9385D42C2A9275EF0057AD8A /* RenderAPI_D3D11.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D11.cpp; path = ../../source/RenderAPI_D3D11.cpp; sourceTree = "<group>"; };
 		9385D42D2A9275EF0057AD8A /* RenderAPI_Vulkan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_Vulkan.cpp; path = ../../source/RenderAPI_Vulkan.cpp; sourceTree = "<group>"; };
 		9385D42E2A9275EF0057AD8A /* RenderAPI_D3D12.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D12.cpp; path = ../../source/RenderAPI_D3D12.cpp; sourceTree = "<group>"; };
+		9385D4322A92AEC50057AD8A /* IUnityLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityLog.h; path = ../../source/Unity/IUnityLog.h; sourceTree = "<group>"; };
+		9385D4362A92B24A0057AD8A /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Logger.h; path = ../../source/Logger.h; sourceTree = "<group>"; };
+		9385D4372A92B24A0057AD8A /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../../source/Logger.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +103,8 @@
 		08FB77AFFE84173DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				9385D4372A92B24A0057AD8A /* Logger.cpp */,
+				9385D4362A92B24A0057AD8A /* Logger.h */,
 				9385D42C2A9275EF0057AD8A /* RenderAPI_D3D11.cpp */,
 				9385D42E2A9275EF0057AD8A /* RenderAPI_D3D12.cpp */,
 				9385D42D2A9275EF0057AD8A /* RenderAPI_Vulkan.cpp */,
@@ -124,6 +130,7 @@
 		2B6899BC1CF8398200C4BA4F /* Unity */ = {
 			isa = PBXGroup;
 			children = (
+				9385D4322A92AEC50057AD8A /* IUnityLog.h */,
 				2B6899C21CF839A600C4BA4F /* IUnityGraphics.h */,
 				2B6899C31CF839A600C4BA4F /* IUnityGraphicsD3D9.h */,
 				2B6899C41CF839A600C4BA4F /* IUnityGraphicsD3D11.h */,
@@ -199,6 +206,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B6899BA1CF8396700C4BA4F /* RenderingPlugin.cpp in Sources */,
+				9385D4382A92B24A0057AD8A /* Logger.cpp in Sources */,
 				2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */,
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
 				9385D4302A9275EF0057AD8A /* RenderAPI_Vulkan.cpp in Sources */,

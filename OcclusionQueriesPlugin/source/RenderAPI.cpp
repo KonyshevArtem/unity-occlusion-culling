@@ -49,3 +49,8 @@ RenderAPI* CreateRenderAPI(UnityGfxRenderer apiType)
 	// Unknown or unsupported graphics API
 	return NULL;
 }
+
+void RenderAPI::Test()
+{
+    
+}

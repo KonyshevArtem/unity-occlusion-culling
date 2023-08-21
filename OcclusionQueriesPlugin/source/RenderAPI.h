@@ -20,6 +20,8 @@ public:
 
 	// Process general event like initialization, shutdown, device loss/reset etc.
 	virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces) = 0;
+    
+    virtual void Test();
 };
 
 

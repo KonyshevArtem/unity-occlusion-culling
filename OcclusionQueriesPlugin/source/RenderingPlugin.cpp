@@ -1,5 +1,6 @@
 #include "PlatformBase.h"
 #include "RenderAPI.h"
+#include "Logger.h"
 
 #include <assert.h>
 
@@ -12,12 +13,15 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 static IUnityInterfaces* s_UnityInterfaces = NULL;
 static IUnityGraphics* s_Graphics = NULL;
 
+
 extern "C" void	UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
 {
 	s_UnityInterfaces = unityInterfaces;
 	s_Graphics = s_UnityInterfaces->Get<IUnityGraphics>();
 	s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
-	
+    
+    InitLogger(s_UnityInterfaces->Get<IUnityLog>());
+    
 #if SUPPORT_VULKAN
 	if (s_Graphics->GetRenderer() == kUnityGfxRendererNull)
 	{
@@ -87,7 +91,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	if (s_CurrentAPI == NULL)
 		return;
 
-    // code goes here
+    s_CurrentAPI->Test();
 }
 
 
