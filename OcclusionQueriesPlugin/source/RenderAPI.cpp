@@ -52,5 +52,8 @@ RenderAPI* CreateRenderAPI(UnityGfxRenderer apiType)
 
 void RenderAPI::Test()
 {
-    
+}
+
+void RenderAPI::PrepareRenderAPI()
+{
 }

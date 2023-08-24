@@ -18,6 +18,7 @@
 #	include <GLES2/gl2.h>
 #elif UNITY_OSX
 #	include <OpenGL/gl3.h>
+#   include <OpenGL/OpenGL.h>
 #elif UNITY_WIN
 // On Windows, use gl3w to initialize and load OpenGL Core functions. In principle any other
 // library (like GLEW, GLFW etc.) can be used; here we use gl3w since it's simple and
@@ -61,9 +62,10 @@ public:
 	RenderAPI_OpenGLCoreES(UnityGfxRenderer apiType);
 	virtual ~RenderAPI_OpenGLCoreES() { }
 
-	virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces);
+	virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces) override;
     
-    virtual void Test();
+    virtual void Test() override;
+    virtual void PrepareRenderAPI() override;
 
 private:
 	void CreateResources();
@@ -74,6 +76,11 @@ private:
     GLuint m_VAO;
     GLuint m_VertexBuffer;
     GLuint m_Program;
+    GLuint m_Query;
+
+#if UNITY_OSX
+    CGLContextObj m_ContextObject = NULL;
+#endif
 };
 
 
@@ -120,6 +127,8 @@ void RenderAPI_OpenGLCoreES::CreateResources()
     
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    
+    glGenQueries(1, &m_Query);
 }
 
 
@@ -128,6 +137,7 @@ void RenderAPI_OpenGLCoreES::ReleaseResources()
     glDeleteVertexArrays(1, &m_VAO);
     glDeleteBuffers(1, &m_VertexBuffer);
     glDeleteProgram(m_Program);
+    glDeleteQueries(1, &m_Query);
 }
 
 
@@ -154,20 +164,29 @@ void RenderAPI_OpenGLCoreES::Test()
     glBindVertexArray(m_VAO);
     glUseProgram(m_Program);
     
-    GLuint query;
-    glGenQueries(1, &query);
-    
-    glBeginQuery(GL_SAMPLES_PASSED, query);
+    glBeginQuery(GL_SAMPLES_PASSED, m_Query);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glEndQuery(GL_SAMPLES_PASSED);
     
     int samples;
-    glGetQueryObjectiv(query, GL_QUERY_RESULT, &samples);
+    glGetQueryObjectiv(m_Query, GL_QUERY_RESULT, &samples);
     LogError(std::to_string(samples).c_str());
     
     glUseProgram(0);
     glBindVertexArray(0);
-    glDeleteQueries(1, &query);
+}
+
+void RenderAPI_OpenGLCoreES::PrepareRenderAPI()
+{
+#if UNITY_OSX
+    CGLContextObj context = CGLGetCurrentContext();
+    if (m_ContextObject != context)
+    {
+        m_ContextObject = context;
+        glDeleteQueries(1, &m_Query);
+        glGenQueries(1, &m_Query);
+    }
+#endif
 }
 
 #endif // #if SUPPORT_OPENGL_UNIFIED

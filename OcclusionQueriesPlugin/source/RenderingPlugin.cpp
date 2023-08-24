@@ -4,6 +4,8 @@
 
 #include <assert.h>
 
+const int TEST_EVENT_ID = 0;
+const int PREPARE_API_EVENT_ID = 1;
 
 // --------------------------------------------------------------------------
 // UnitySetInterfaces
@@ -91,6 +93,16 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	if (s_CurrentAPI == NULL)
 		return;
 
+    switch (eventID) {
+        case TEST_EVENT_ID:
+            s_CurrentAPI->Test();
+            break;
+        case PREPARE_API_EVENT_ID:
+            s_CurrentAPI->PrepareRenderAPI();
+            break;
+        default:
+            break;
+    }
     s_CurrentAPI->Test();
 }
 

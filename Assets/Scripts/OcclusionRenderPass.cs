@@ -12,7 +12,16 @@ public class OcclusionRenderPass : ScriptableRenderPass
 #endif
     private static extern IntPtr GetRenderEventFunc();
 
+    private const int TEST_EVENT_ID = 0;
+    private const int PREPARE_API_EVENT_ID = 1;
+
+    private readonly IntPtr m_RenderEventFunc;
     private readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Occlusion Queries");
+
+    public OcclusionRenderPass()
+    {
+        m_RenderEventFunc = GetRenderEventFunc();
+    }
 
     public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
     {
@@ -20,9 +29,11 @@ public class OcclusionRenderPass : ScriptableRenderPass
         context.ExecuteCommandBuffer(cmd);
         cmd.Clear();
 
+        cmd.IssuePluginEvent(m_RenderEventFunc, PREPARE_API_EVENT_ID);
+
         using (new ProfilingScope(cmd, m_ProfilingSampler))
         {
-            cmd.IssuePluginEvent(GetRenderEventFunc(), 0);
+            cmd.IssuePluginEvent(m_RenderEventFunc, TEST_EVENT_ID);
         }
 
         context.ExecuteCommandBuffer(cmd);
