@@ -54,6 +54,6 @@ void RenderAPI::Test()
 {
 }
 
-void RenderAPI::PrepareRenderAPI()
+void RenderAPI::PrepareRenderAPI(const void* matricesBuffer)
 {
 }

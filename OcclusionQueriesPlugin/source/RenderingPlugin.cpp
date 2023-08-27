@@ -4,7 +4,7 @@
 
 #include <assert.h>
 
-const int TEST_EVENT_ID = 0;
+const int RENDER_EVENT_ID = 0;
 const int PREPARE_API_EVENT_ID = 1;
 
 // --------------------------------------------------------------------------
@@ -94,16 +94,27 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 		return;
 
     switch (eventID) {
-        case TEST_EVENT_ID:
+        case RENDER_EVENT_ID:
             s_CurrentAPI->Test();
-            break;
-        case PREPARE_API_EVENT_ID:
-            s_CurrentAPI->PrepareRenderAPI();
             break;
         default:
             break;
     }
-    s_CurrentAPI->Test();
+}
+
+static void UNITY_INTERFACE_API OnRenderEventWithData(int eventID, void* data)
+{
+    // Unknown / unsupported graphics device type? Do nothing
+    if (s_CurrentAPI == NULL)
+        return;
+
+    switch (eventID) {
+        case PREPARE_API_EVENT_ID:
+            s_CurrentAPI->PrepareRenderAPI(data);
+            break;
+        default:
+            break;
+    }
 }
 
 
@@ -113,5 +124,10 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
 {
 	return OnRenderEvent;
+}
+
+extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventWithDataFunc()
+{
+    return OnRenderEventWithData;
 }
 

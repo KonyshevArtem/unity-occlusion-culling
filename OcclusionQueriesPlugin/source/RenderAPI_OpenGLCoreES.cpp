@@ -37,18 +37,22 @@
 #	error Unknown platform
 #endif
 
-const char* vertexShaderSource =                                        \
-    "#version 150\n"                                                 \
+const int CUBE_VERTEX_COUNT = 3 * 2 * 6;
+
+const char* VERTEX_SHADER_SOURCE =                                        \
+    "#version 330\n"                                                 \
     "in highp vec3 pos;\n"                                        \
-    "uniform highp mat4 worldMatrix;\n"                                \
-    "uniform highp mat4 projMatrix;\n"                                \
+    "layout(std140) uniform Matrices\n"                    \
+    "{\n"                                                           \
+    "   mat4 vpMatrix;\n"                                           \
+    "};\n"                                                           \
     "void main()\n"                                                    \
     "{\n"                                                            \
-    "    gl_Position = vec4(pos,1);\n"                              \
+    "    gl_Position = vpMatrix * vec4(pos,1);\n"                     \
     "}\n";
 
-const char* fragmentShaderSource =                        \
-    "#version 150\n"                                  \
+const char* FRAGMENT_SHADER_SOURCE =                        \
+    "#version 330\n"                                  \
     "out lowp vec4 fragColor;\n"                       \
     "void main()\n"                                    \
     "{\n"                                            \
@@ -65,7 +69,7 @@ public:
 	virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces) override;
     
     virtual void Test() override;
-    virtual void PrepareRenderAPI() override;
+    virtual void PrepareRenderAPI(const void* matricesBuffer) override;
 
 private:
 	void CreateResources();
@@ -89,11 +93,55 @@ RenderAPI* CreateRenderAPI_OpenGLCoreES(UnityGfxRenderer apiType)
 	return new RenderAPI_OpenGLCoreES(apiType);
 }
 
+GLuint CompileShader(GLenum shaderType, const char* shaderSource)
+{
+    GLuint shader = glCreateShader(shaderType);
+    glShaderSource(shader, 1, &shaderSource, NULL);
+    glCompileShader(shader);
+    
+    GLint isCompiled = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+    
+    if (isCompiled == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        char* msg = new char[maxLength];
+        glGetShaderInfoLog(shader, maxLength, &maxLength, &msg[0]);
+        LogError(msg);
+        delete[] msg;
+    }
+    
+    return shader;
+}
 
 void RenderAPI_OpenGLCoreES::CreateResources()
 {
-    const float vertices[9] = {
-        -1, 1, 0.5f,    1, 1, 0.5f,    0, -1, 0.5f,
+    const float vertices[CUBE_VERTEX_COUNT * 3] = {
+        // front face
+        -1, 1, -1,    1, 1, -1,    -1, -1, -1,
+        1, 1, -1,     1, -1, -1,   -1, -1, -1,
+        
+        // left face
+        -1, 1, 1,     -1, 1, -1,   -1, -1, 1,
+        -1, 1, -1,    -1, -1, -1,  -1, -1, 1,
+        
+        // back face
+        1, 1, 1,      -1, 1, 1,    -1, -1, 1,
+        1, 1, 1,      -1, -1, 1,   1, -1, 1,
+        
+        // right face
+        1, 1, -1,     1, 1, 1,     1, -1, -1,
+        1, 1, 1,      1, -1, 1,    1, -1, -1,
+        
+        // top face
+        -1, 1, 1,     1, 1, 1,     -1, 1, -1,
+        1, 1, 1,      1, 1, -1,    -1, 1, -1,
+        
+        // bottom face
+        -1, -1, -1,   1, -1, -1,   1, -1, 1,
+        -1, -1, -1,   1, -1, 1,    -1, -1, 1
     };
     
 #	if UNITY_WIN && SUPPORT_OPENGL_CORE
@@ -106,24 +154,23 @@ void RenderAPI_OpenGLCoreES::CreateResources()
     
     glGenBuffers(1, &m_VertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, 9 * 4, &vertices, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, CUBE_VERTEX_COUNT * 3 * 4, &vertices, GL_STREAM_DRAW);
     
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     
     glBindVertexArray(0);
     
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(vertexShader);
-    glCompileShader(fragmentShader);
+    GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, VERTEX_SHADER_SOURCE);
+    GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER_SOURCE);
     
     m_Program = glCreateProgram();
     glAttachShader(m_Program, vertexShader);
     glAttachShader(m_Program, fragmentShader);
     glLinkProgram(m_Program);
+    
+    GLuint index = glGetUniformBlockIndex(m_Program, "Matrices");
+    glUniformBlockBinding(m_Program, index, 0);
     
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -161,22 +208,16 @@ void RenderAPI_OpenGLCoreES::ProcessDeviceEvent(UnityGfxDeviceEventType type, IU
 
 void RenderAPI_OpenGLCoreES::Test()
 {
-    glBindVertexArray(m_VAO);
-    glUseProgram(m_Program);
-    
     glBeginQuery(GL_SAMPLES_PASSED, m_Query);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, CUBE_VERTEX_COUNT);
     glEndQuery(GL_SAMPLES_PASSED);
     
     int samples;
     glGetQueryObjectiv(m_Query, GL_QUERY_RESULT, &samples);
     LogError(std::to_string(samples).c_str());
-    
-    glUseProgram(0);
-    glBindVertexArray(0);
 }
 
-void RenderAPI_OpenGLCoreES::PrepareRenderAPI()
+void RenderAPI_OpenGLCoreES::PrepareRenderAPI(const void* matricesBuffer)
 {
 #if UNITY_OSX
     CGLContextObj context = CGLGetCurrentContext();
@@ -187,6 +228,16 @@ void RenderAPI_OpenGLCoreES::PrepareRenderAPI()
         glGenQueries(1, &m_Query);
     }
 #endif
+    
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LEQUAL);
+    
+    glBindVertexArray(m_VAO);
+    glUseProgram(m_Program);
+    
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, (GLuint)(size_t)matricesBuffer);
 }
 
 #endif // #if SUPPORT_OPENGL_UNIFIED

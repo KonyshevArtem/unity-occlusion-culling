@@ -12,9 +12,15 @@ public class OcclusionRendererFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (renderingData.cameraData.cameraType == CameraType.Game)
+        if (m_Pass != null)
         {
             renderer.EnqueuePass(m_Pass);
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        m_Pass?.Dispose();
+        m_Pass = null;
     }
 }

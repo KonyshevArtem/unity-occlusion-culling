@@ -22,7 +22,7 @@ public:
 	virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* interfaces) = 0;
     
     virtual void Test();
-    virtual void PrepareRenderAPI();
+    virtual void PrepareRenderAPI(const void* matricesBuffer);
 };
 
 
